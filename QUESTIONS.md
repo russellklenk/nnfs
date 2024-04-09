@@ -12,3 +12,7 @@
   N1 [ I10,  I11,  I12,  I13 ]
   N2 [ I20,  I21,  I22,  I23 ]
 
+- ch03-05 during random initialization of the weights, the weights are scaled down by a constant factor to reduce their 
+  magnitude. The book says that this reduces training time. Why?
+  ANSWER: I believe this is because there is less space to 'search' during optimization when the values are smaller.
+
