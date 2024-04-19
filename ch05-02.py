@@ -2,6 +2,7 @@
 # Retrieve values from a softmax distribution corresponding to target values.
 import math
 import numpy as np
+from   typing import List
 
 # Some made-up outputs from the softmax activation function.
 # These represent a normalized probability distribution.
@@ -59,9 +60,32 @@ targets_array = softmax_output_array[[0, 1, 2], class_targets]
 print(targets_array)
 print(targets_array.shape)
 
+# The equivalent of np.clip, used to clamp all values in an input array into a given range.
+def clip(items: List[float], lower: float, upper: float) -> List[float]:
+    count : int = len(items)
+    result: List[float] = [0.0] * count
+    for index, value in enumerate(items):
+        if value < lower:
+            result[index] = lower
+        elif value > upper:
+            result[index] = upper
+        else:
+            result[index] = value
+
+    return result
+
+# The softmax output value for a given sample might be zero if the model has 100% 
+# confidence in a value other than the target class, which means that the confidence
+# value selected and placed in the target array will be 0.
+# The value of log(0) is negative infinity, which will result in a divide-by-zero
+# error when calculating the loss values and cause the average loss to become infinity.
+# Clamp all of the values in the set of softmax outputs for class targets into a range
+# where this cannot happen.
+targets_clipped = clip(targets, 1e-7, 1.0 - 1e-7)
+targets_clipped_array = np.clip(targets_array, 1e-7, 1.0 - 1e-7)
+
 # Now calculating the loss values is straightforward.
-# Though log(0) is not defined so that case needs to be handled.
-loss_values = [-math.log(x) for x in targets]
+loss_values = [-math.log(x) for x in targets_clipped]
 print(loss_values)
 
 # Calculate the average loss per-batch as the arithmetic mean:
@@ -69,7 +93,7 @@ average_loss = sum(loss_values) / len(loss_values)
 print(average_loss)
 
 # And the above in numpy:
-loss_values = -np.log(targets_array)
+loss_values = -np.log(targets_clipped_array)
 average_loss = np.mean(loss_values)
 print(average_loss)
 
