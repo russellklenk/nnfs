@@ -151,11 +151,23 @@ for iteration in range(iteration_count):
     relu_layer0   .forward(dense_layer0.outputs)
     dense_layer1  .forward(relu_layer0 .outputs)
     softmax_layer1.forward(dense_layer1.outputs)
+
+    # Note: Loss is calculated per-sample (input) but what's returned by .calculate 
+    # is the average loss over all samples. The per-sample loss is not returned.
     loss = crossentropy_loss.calculate(softmax_layer1.outputs, y)
 
     # Calculate how often the predicted output class matches the expected output class.
     predictions = np.argmax(softmax_layer1.outputs, axis=1)
     accuracy = np.mean(predictions == y)
+
+    if iteration == (iteration_count - 1):
+        print(f'X: {X.shape} [samples]')
+        print(f'y: {y.shape} [ground truth]')
+        print(f'0: {dense_layer0.outputs.shape}   [hidden layer 0 outputs]')
+        print(f'R: {relu_layer0 .outputs.shape}   [ReLU activation]')
+        print(f'1: {dense_layer1.outputs.shape}   [hidden layer 1 outputs]')
+        print(f'S: {softmax_layer1.outputs.shape} [Softmax activation]')
+        print(f'P: {predictions.shape} [predictions]')
 
     # Checkpoint if loss has decreased.
     if loss < lowest_loss:
